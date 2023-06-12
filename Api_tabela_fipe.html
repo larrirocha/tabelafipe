@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="assets/style.css">
+  <title>Consulta de veículos</title>
+
+</head>
+<style>
+  div {
+    width: 400px;
+  }
+
+  select {
+    width: 300px;
+  }
+
+  #valor {
+    font-size: 21px;
+  }
+</style>
+
+<body>
+  <div>
+
+    <h1>Consulta de veículos</h1>
+
+    <div>
+      <div>
+        <p>Selecione o tipo de veículo</p>
+        <select id="tipoVeiculoSelect">
+          <option value="0"></option>
+          <option value="motos">Motos</option>
+          <option value="carros">Carros</option>
+          <option value="caminhoes">Caminhões</option>
+        </select>
+      </div>
+
+        <p>Selecione a marca do veículo</p>
+        <select id="marcasSelect"></select>
+      
+        <p>Selecione o modelo do veículo</p>
+        <select id="modeloSelect"></select>
+      
+      <div>
+        <p>Selecione o ano do veículo</p>
+        <select id="anoSelect"> </select>
+      </div>
+      <br>
+
+      <div>
+
+        <div id="valor" class="valor">
+          Valor R$
+        </div>
+        <br>
+
+        <button onclick="novabusca()">Nova Busca</button>
+      </div>
+
+    </div>
+    <script>
+      const tipoVeiculoSelect = document.getElementById('tipoVeiculoSelect');
+      const marcasSelect = document.getElementById('marcasSelect');
+      const modeloSelect = document.getElementById('modeloSelect');
+      const anoSelect = document.getElementById('anoSelect');
+      const valorveiculo = document.getElementById('valor');
+
+
+      function preencherMarcasSelect(url) {
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            // Limpa o select de marcas
+            marcasSelect.innerHTML = '';
+
+
+            // Adiciona a opção padrão
+            const defaultOptionElement = document.createElement('option');
+            defaultOptionElement.value = '';
+            defaultOptionElement.text = 'Selecione a marca';
+            marcasSelect.add(defaultOptionElement);
+
+            // Itera sobre os dados retornados e adiciona as opções no select de marcas
+            for (let marca of data) {
+              const optionElement = document.createElement('option');
+              optionElement.value = marca.codigo;
+              optionElement.text = marca.nome;
+              marcasSelect.add(optionElement);
+            }
+          })
+          .catch(error => console.error(error));
+      }
+      function novabusca() {
+        modeloSelect.innerHTML = '';
+        anoSelect.innerHTML = '';
+        valorveiculo.innerHTML = 'Valor R$';
+        tipoVeiculoSelect.value = 0;
+        marcasSelect.innerHTML = '';
+      }
+
+      function carregarMarcasSelect() {
+        const tipoVeiculo = tipoVeiculoSelect.value;
+        modeloSelect.innerHTML = '';
+        anoSelect.innerHTML = '';
+        valorveiculo.innerHTML = 'Valor R$';
+
+        // Define a URL de acordo com o tipo de veículo selecionado
+        let url;
+        switch (tipoVeiculo) {
+          case 'motos':
+            url = 'https://parallelum.com.br/fipe/api/v1/motos/marcas';
+            break;
+          case 'carros':
+            url = 'https://parallelum.com.br/fipe/api/v1/carros/marcas';
+            break;
+          case 'caminhoes':
+            url = 'https://parallelum.com.br/fipe/api/v1/caminhoes/marcas';
+            break;
+        }
+
+        // Preenche o select de marcas com base na URL definida
+        preencherMarcasSelect(url);
+      }
+
+      // carrega modelo
+      function carregarModeloSelect() {
+        const marcaVeiculo = marcasSelect.value;
+        const tipoVeiculo = tipoVeiculoSelect.value;
+        console.log(marcaVeiculo)
+
+        var url = 'https://parallelum.com.br/fipe/api/v1/' + tipoVeiculo + '/marcas/' + marcaVeiculo + '/modelos';
+        console.log(url);
+
+        preencherModeloSelect(url);
+      }
+
+      function carregaAnoSelect() {
+        const modeloveiculo = modeloSelect.value;
+        const marcaVeiculo = marcasSelect.value;
+        const tipoVeiculo = tipoVeiculoSelect.value;
+
+        var url = 'https://parallelum.com.br/fipe/api/v1/' + tipoVeiculo + '/marcas/' + marcaVeiculo + '/modelos/' + modeloveiculo + '/anos';
+
+        preencherAnoSelect(url);
+      }
+
+      // Preencher modelo
+      async function preencherModeloSelect(url) {
+        const response = await fetch(url);
+        const names = await response.json();
+
+        modeloSelect.innerHTML = '';
+
+        // Adiciona a opção padrão
+        const defaultOptionElement = document.createElement('option');
+        defaultOptionElement.value = '';
+        defaultOptionElement.text = 'Selecione o modelo';
+        modeloSelect.add(defaultOptionElement);
+
+        // Itera sobre os dados retornados e adiciona as opções no select de modelos
+        for (let mod of names.modelos) {
+          const optionElement = document.createElement('option');
+          optionElement.value = mod.codigo;
+          optionElement.text = mod.nome;
+          modeloSelect.add(optionElement);
+        }
+
+
+
+      }
+      async function preencherAnoSelect(url) {
+        const response = await fetch(url);
+        const anos = await response.json();
+
+        console.log(anos);
+
+        // Adiciona a opção padrão
+        const defaultOptionElement2 = document.createElement('option');
+        defaultOptionElement2.value = '';
+        defaultOptionElement2.text = 'Selecione o ano';
+        anoSelect.add(defaultOptionElement2);
+
+        for (let ano of anos) {
+          const optionElement = document.createElement('option');
+          optionElement.value = ano.codigo;
+          optionElement.text = ano.nome;
+          anoSelect.add(optionElement);
+        }
+      }
+
+      function carregaValor() {
+        const modeloveiculo = modeloSelect.value;
+        const marcaVeiculo = marcasSelect.value;
+        const tipoVeiculo = tipoVeiculoSelect.value;
+        const anoVeiculo = anoSelect.value;
+
+        var url = 'https://parallelum.com.br/fipe/api/v1/' + tipoVeiculo + '/marcas/' + marcaVeiculo + '/modelos/' + modeloveiculo + '/anos/' + anoVeiculo;
+
+        preencherValor(url);
+      }
+
+      async function preencherValor(url) {
+        const response = await fetch(url);
+        const valores = await response.json();
+        console.log(valores);
+        console.log(valores.values);
+
+        valorveiculo.innerHTML = valores.Valor;
+
+
+      }
+
+
+
+      // Carrega o select de marcas com base no tipo de veículo selecionado
+      tipoVeiculoSelect.addEventListener('change', carregarMarcasSelect);
+      // Carrega o select de modelo com base na marca
+      marcasSelect.addEventListener('change', carregarModeloSelect);
+      // Carrega o select de ano com base no modelo
+      modeloSelect.addEventListener('change', carregaAnoSelect)
+      // Carrega a div com o valor da tabela fipe
+      anoSelect.addEventListener('change', carregaValor)
+
+
+
+
+    </script>
+</body>
+
+</html>
